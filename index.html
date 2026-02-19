@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MJ Sniper">
+<meta name="theme-color" content="#e8401a">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<title>Mellojoy Sniper</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fdf8f3; --card:#fff; --card2:#faf5ee; --border:#e8ddd0;
+  --accent:#e8401a; --accent2:#f4a261; --green:#2d6a4f;
+  --text:#1a1207; --muted:#8a7560; --warn:#e07b00;
+  --sans:'Outfit',sans-serif; --mono:'JetBrains Mono',monospace;
+  --safe-top:env(safe-area-inset-top); --safe-bot:env(safe-area-inset-bottom);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100%;padding-bottom:calc(80px + var(--safe-bot))}
+.stripe{height:calc(4px + var(--safe-top));background:linear-gradient(90deg,var(--accent),var(--accent2),var(--green));padding-top:var(--safe-top)}
+
+/* HEADER */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;background:var(--card);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(26,18,7,0.06);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.li{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 8px rgba(232,64,26,0.3);flex-shrink:0}
+.ln .n{font-size:17px;font-weight:900;letter-spacing:-0.3px}
+.ln .n span{color:var(--accent)}
+.ln .s{font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:1.5px}
+.pill{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border);border-radius:100px;padding:5px 11px;font-size:11px;font-family:var(--mono);color:var(--muted)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;transition:all 0.3s}
+.dot.on  {background:var(--green);box-shadow:0 0 5px var(--green);animation:bl 1.8s infinite}
+.dot.scan{background:var(--warn);box-shadow:0 0 5px var(--warn);animation:bl 0.7s infinite}
+.dot.hit {background:var(--accent);box-shadow:0 0 8px var(--accent);animation:bl 0.3s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0.2}}
+
+.wrap{padding:0 16px}
+
+/* HERO */
+.hero{
+  background:var(--card);border:1px solid var(--border);border-radius:20px;
+  margin:14px 0 12px;padding:20px 18px 16px;text-align:center;
+  box-shadow:0 2px 16px rgba(26,18,7,0.06);position:relative;overflow:hidden;
+}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(232,64,26,0.08),transparent 70%);border-radius:50%;pointer-events:none}
+.h-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);font-family:var(--mono);margin-bottom:6px}
+.cd{font-size:50px;font-weight:900;letter-spacing:-2px;line-height:1;transition:color 0.3s}
+.cd.w{color:var(--muted)}.cd.r{color:var(--green)}.cd.s{color:var(--warn)}
+.cd.f{color:var(--accent);animation:fp 0.5s infinite}
+@keyframes fp{50%{text-shadow:0 0 30px rgba(232,64,26,0.5)}}
+.h-now{margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+
+/* SLEEP WARNING */
+.sleep-warn{
+  background:rgba(232,64,26,0.05);border:1px solid rgba(232,64,26,0.2);
+  border-radius:14px;padding:13px 15px;margin-bottom:12px;
+  font-size:12px;color:var(--text);line-height:1.7;
+}
+.sleep-warn strong{font-weight:700;color:var(--accent)}
+.sleep-warn .sw-title{font-size:13px;font-weight:700;margin-bottom:4px}
+
+/* SERVER BAR */
+.sbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px;box-shadow:0 1px 6px rgba(26,18,7,0.05)}
+.sd{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.sd.ok{background:var(--green)}.sd.ng{background:var(--accent)}.sd.wait{background:var(--warn);animation:bl 0.7s infinite}
+.si{flex:1;min-width:0}
+.si .t{font-size:13px;font-weight:700}
+.si .s{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center;box-shadow:0 1px 6px rgba(26,18,7,0.05)}
+.sn{font-size:24px;font-weight:900;line-height:1}.sn.c1{color:var(--accent)}.sn.c2{color:var(--warn)}.sn.c3{color:var(--green)}
+.sl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 1px 8px rgba(26,18,7,0.05)}
+.ch{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.ci{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--card2);border:1px solid var(--border);flex-shrink:0}
+.ci.r{background:rgba(232,64,26,0.08);border-color:rgba(232,64,26,0.2)}
+.ci.g{background:rgba(45,106,79,0.08);border-color:rgba(45,106,79,0.2)}
+.ci.o{background:rgba(244,162,97,0.12);border-color:rgba(244,162,97,0.3)}
+.ct{font-size:14px;font-weight:700}
+
+/* FORM */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
+.fgr{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fgr:last-child{margin-bottom:0}
+.fgr .fg{margin-bottom:0}
+label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:var(--mono)}
+input[type=url],input[type=text],input[type=number],input[type=datetime-local],select{
+  background:var(--card2);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:var(--sans);font-size:15px;padding:11px 13px;
+  outline:none;width:100%;-webkit-appearance:none;transition:border-color 0.2s;
+}
+input:focus,select:focus{border-color:var(--accent)}
+input::placeholder{color:var(--border)}
+
+/* Product preview */
+.pp{display:none;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-top:8px}
+.pp.show{display:flex}
+.pp img{width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--border);flex-shrink:0}
+.pp-i{flex:1;min-width:0}
+.pp-t{font-size:12px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pp-p{font-size:11px;color:var(--accent);font-family:var(--mono);margin-top:1px}
+.pp-b{font-size:10px;padding:3px 8px;border-radius:100px;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.pp-b.s{background:rgba(232,64,26,0.1);color:var(--accent)}.pp-b.a{background:rgba(45,106,79,0.1);color:var(--green)}
+
+.hint{font-family:var(--mono);font-size:10px;color:var(--muted);padding:6px 10px;background:var(--card2);border-radius:7px;border:1px solid var(--border);word-break:break-all;margin-top:6px;display:none}
+.hint.show{display:block}
+.ok{color:var(--green);font-weight:700}.err{color:var(--accent)}
+
+/* Range */
+.rw{display:flex;align-items:center;gap:10px}
+input[type=range]{-webkit-appearance:none;flex:1;height:4px;background:var(--border);border-radius:4px;padding:0;border:none;outline:none;box-shadow:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 2px 6px rgba(232,64,26,0.3)}
+.rv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);min-width:52px;text-align:right}
+
+/* Toggles */
+.tr{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.tr:last-child{border-bottom:none}
+.ti .tn{font-size:13px;font-weight:600}
+.ti .td{font-size:11px;color:var(--muted);margin-top:1px}
+.sw{position:relative;width:50px;height:28px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw-t{position:absolute;inset:0;background:var(--border);border-radius:100px;cursor:pointer;transition:0.25s}
+.sw-t::before{content:'';position:absolute;width:20px;height:20px;left:4px;top:4px;background:#fff;border-radius:50%;transition:0.25s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.sw input:checked+.sw-t{background:var(--accent)}
+.sw input:checked+.sw-t::before{transform:translateX(22px)}
+
+/* Install banner */
+.inst{background:linear-gradient(135deg,rgba(45,106,79,0.07),rgba(244,162,97,0.07));border:1px solid rgba(45,106,79,0.2);border-radius:16px;padding:13px 15px;margin-bottom:12px;display:none}
+.inst.show{display:block}
+.it{font-size:13px;font-weight:700;margin-bottom:5px}
+.is{font-size:12px;color:var(--muted);line-height:1.9}
+.is code{background:rgba(45,106,79,0.1);color:var(--green);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:11px}
+
+/* LOG */
+.log{background:#1a1207;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.lgh{background:#241a0e;padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.lgd{display:flex;gap:5px}
+.lgd span{width:8px;height:8px;border-radius:50%}
+.dr{background:#ff5f57}.dy{background:#febc2e}.dg2{background:#28c840}
+.lgl{font-family:var(--mono);font-size:10px;color:#6a5a40;letter-spacing:2px}
+.lgc{font-family:var(--mono);font-size:10px;color:#6a5a40;background:none;border:none;cursor:pointer}
+.lgb{padding:12px 14px;height:170px;overflow-y:auto}
+.ll{font-family:var(--mono);font-size:11px;line-height:1.9;display:flex;gap:8px;align-items:baseline}
+.lt{color:#6a5a40;flex-shrink:0;font-size:10px}
+.lb{font-size:8px;padding:1px 5px;border-radius:3px;font-weight:700;letter-spacing:1px;flex-shrink:0}
+.li2{background:rgba(45,106,79,0.25);color:#52b788}.lw2{background:rgba(224,123,0,0.2);color:#f4a261}
+.ls2{background:rgba(45,106,79,0.3);color:#74c69d}.le2{background:rgba(232,64,26,0.2);color:#ff7b5e}
+.la2{background:rgba(244,162,97,0.2);color:#f4a261}
+.lm{color:#d4c5a0;flex:1;word-break:break-all}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#3a2a18;border-radius:4px}
+
+/* ALERT */
+.al{display:none;position:fixed;inset:0;z-index:200;background:rgba(232,64,26,0.1);backdrop-filter:blur(4px);align-items:center;justify-content:center}
+.al.show{display:flex;animation:fi 0.3s}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.ab{background:var(--card);border-radius:24px;padding:28px 22px 22px;text-align:center;max-width:320px;width:90%;box-shadow:0 20px 60px rgba(232,64,26,0.2);animation:su 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes su{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ae{font-size:48px;margin-bottom:10px}
+.at{font-size:22px;font-weight:900;color:var(--accent);margin-bottom:6px}
+.as{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px}
+.abtn{display:block;width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px;box-shadow:0 4px 14px rgba(232,64,26,0.3)}
+.abtn2{display:block;width:100%;padding:12px;background:var(--card2);color:var(--muted);border:1px solid var(--border);border-radius:12px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+
+/* ACTION BAR */
+.abar{position:fixed;bottom:0;left:0;right:0;padding:12px 16px calc(12px + var(--safe-bot));background:rgba(253,248,243,0.93);backdrop-filter:blur(12px) saturate(180%);-webkit-backdrop-filter:blur(12px) saturate(180%);border-top:1px solid var(--border);display:flex;gap:10px;z-index:100}
+.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:14px;border-radius:12px;font-family:var(--sans);font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all 0.15s}
+.btn:active{transform:scale(0.95)}
+.bg{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(232,64,26,0.3)}
+.bg:disabled{opacity:0.4}
+.bs{background:transparent;color:var(--accent);border:1.5px solid var(--accent);flex:0 0 auto;padding:14px 18px}
+.bc{background:var(--card2);color:var(--muted);border:1.5px solid var(--border);flex:0 0 auto;padding:14px 16px}
+</style>
+</head>
+<body>
+
+<!-- Alert Overlay -->
+<div class="al" id="alertBox">
+  <div class="ab">
+    <div class="ae">🎯</div>
+    <div class="at">在庫あり！</div>
+    <div class="as" id="alertMsg">在庫が確認されました</div>
+    <button class="abtn" id="alertBuy">🛒 今すぐ購入する →</button>
+    <button class="abtn2" onclick="document.getElementById('alertBox').classList.remove('show')">後で見る</button>
+  </div>
+</div>
+
+<div class="stripe"></div>
+
+<div class="hdr">
+  <div class="logo">
+    <div class="li">🎯</div>
+    <div class="ln">
+      <div class="n">Mellojoy <span>Sniper</span></div>
+      <div class="s">iPhone PWA — Cloud Edition</div>
+    </div>
+  </div>
+  <div class="pill">
+    <div class="dot" id="monDot"></div>
+    <span id="monTxt">待機中</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Install banner (Safari のみ表示) -->
+  <div class="inst" id="instBanner">
+    <div class="it">📲 ホーム画面に追加してPWAとして使う</div>
+    <div class="is">Safari下部の <code>共有</code> → <code>ホーム画面に追加</code> をタップ<br>追加後は通知も受け取れます（iOS 16.4以降）</div>
+  </div>
+
+  <!-- Countdown Hero -->
+  <div class="hero">
+    <div class="h-lbl">販売開始まで</div>
+    <div class="cd w" id="cd">設定待ち</div>
+    <div class="h-now" id="now">--:--:--.---</div>
+  </div>
+
+  <!-- Render sleep warning -->
+  <div class="sleep-warn">
+    <div class="sw-title">⚠️ Renderスリープについて</div>
+    <strong>15分間アクセスがないとサーバーがスリープします。</strong><br>
+    毎日12時の販売前に <strong>11:55頃</strong> このアプリを開いてサーバーを起こしてください。
+    「5分前リマインダー」をONにすると自動で通知が来ます。
+  </div>
+
+  <!-- Server Bar -->
+  <div class="sbar">
+    <div class="sd wait" id="sbDot"></div>
+    <div class="si">
+      <div class="t" id="sbT">サーバー確認中...</div>
+      <div class="s" id="sbS">接続を確認しています</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="sn c1" id="sP">0</div><div class="sl">確認回数</div></div>
+    <div class="stat"><div class="sn c2" id="sE">0</div><div class="sl">エラー</div></div>
+    <div class="stat"><div class="sn c3" id="sF">0</div><div class="sl">在庫検出</div></div>
+  </div>
+
+  <!-- Target -->
+  <div class="card">
+    <div class="ch"><div class="ci r">🎯</div><div class="ct">ターゲット商品</div></div>
+    <div class="fg">
+      <label>商品URL</label>
+      <input type="url" id="pUrl" inputmode="url"
+        placeholder="https://www.mellojoyjapan.com/products/..."
+        oninput="parseUrl(this.value)" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+      <div class="hint" id="hint"></div>
+      <div class="pp" id="pp">
+        <img id="ppI" src="" alt="">
+        <div class="pp-i"><div class="pp-t" id="ppT">—</div><div class="pp-p" id="ppP">—</div></div>
+        <div class="pp-b s" id="ppB">—</div>
+      </div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>販売開始日時</label><input type="datetime-local" id="saleTime"/></div>
+      <div class="fg"><label>事前監視（秒前）</label><input type="number" id="pre" value="30" min="5" max="600" inputmode="numeric"/></div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="card">
+    <div class="ch"><div class="ci g">⚙️</div><div class="ct">監視設定</div></div>
+    <div class="fg">
+      <label>ポーリング間隔: <span id="iLbl">500ms</span></label>
+      <div class="rw">
+        <input type="range" id="intv" min="300" max="5000" step="100" value="500" oninput="onIntv(this.value)">
+        <span class="rv" id="iV">500ms</span>
+      </div>
+    </div>
+    <div class="fgr">
+      <div class="fg"><label>数量</label><input type="number" id="qty" value="1" min="1" max="10" inputmode="numeric"/></div>
+      <div class="fg"><label>最大試行</label><input type="number" id="maxR" value="120" min="1" max="999" inputmode="numeric"/></div>
+    </div>
+  </div>
+
+  <!-- Options -->
+  <div class="card">
+    <div class="ch"><div class="ci o">🔔</div><div class="ct">通知・動作</div></div>
+    <div class="tr">
+      <div class="ti"><div class="tn">🔔 通知（iOS 16.4+ PWA必須）</div><div class="td">在庫検出時にプッシュ通知</div></div>
+      <label class="sw"><input type="checkbox" id="tN" checked onchange="askNotif()"><span class="sw-t"></span></label>
+    </div>
+    <div class="tr">
+      <div class="ti"><div class="tn">🔊 音声アラート</div><div class="td">在庫検出時に効果音</div></div>
+      <label class="sw"><input type="checkbox" id="tS" checked><span class="sw-t"></span></label>
+    </div>
+    <div class="tr">
+      <div class="ti"><div class="tn">📳 バイブレーション</div><div class="td">在庫検出時に振動</div></div>
+      <label class="sw"><input type="checkbox" id="tV" checked><span class="sw-t"></span></label>
+    </div>
+    <div class="tr">
+      <div class="ti"><div class="tn">🛒 カートページを自動オープン</div><div class="td">在庫検出時に購入ページへジャンプ</div></div>
+      <label class="sw"><input type="checkbox" id="tC" checked><span class="sw-t"></span></label>
+    </div>
+    <div class="tr">
+      <div class="ti"><div class="tn">⏰ 5分前リマインダー</div><div class="td">販売5分前に通知。画面を開いておくサイン</div></div>
+      <label class="sw"><input type="checkbox" id="t5" checked><span class="sw-t"></span></label>
+    </div>
+    <div class="tr">
+      <div class="ti"><div class="tn">☕ サーバーKeep-Alive</div><div class="td">30秒ごとにpingしてRenderスリープを防止</div></div>
+      <label class="sw"><input type="checkbox" id="tK" checked><span class="sw-t"></span></label>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="log">
+    <div class="lgh">
+      <div class="lgd"><span class="dr"></span><span class="dy"></span><span class="dg2"></span></div>
+      <div class="lgl">SNIPER LOG</div>
+      <button class="lgc" onclick="clearLog()">クリア</button>
+    </div>
+    <div class="lgb" id="lgB"></div>
+  </div>
+
+</div>
+
+<!-- Action Bar -->
+<div class="abar">
+  <button class="btn bc" onclick="check()" title="商品確認">🔍</button>
+  <button class="btn bg" id="startBtn" onclick="start()" disabled>⚡ 監視スタート</button>
+  <button class="btn bs" id="stopBtn" onclick="stop()" style="display:none">⏹</button>
+</div>
+
+<script>
+// ── クラウドURL自動検出 ──
+// デプロイ後はwindow.locationのオリジンをAPIベースとして使う
+const API = window.location.origin + '/api';
+
+let running=false, loop=null, preT=null, remT=null, keepT=null;
+let polls=0, errs=0, found=0, handle='', serverOk=false;
+
+// ── CLOCK ──
+setInterval(()=>{
+  const n=new Date();
+  document.getElementById('now').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}.${p3(n.getMilliseconds())}`;
+},50);
+setInterval(()=>{
+  const v=document.getElementById('saleTime').value;
+  const el=document.getElementById('cd');
+  if(!v){el.textContent='設定待ち';el.className='cd w';return}
+  const diff=new Date(v).getTime()-Date.now();
+  if(diff<=0){el.textContent='発売中！';el.className='cd f';return}
+  const h=Math.floor(diff/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
+  el.textContent=h>0?`${h}:${p(m)}:${p(s)}`:`${p(m)}:${p(s)}`;
+  el.className=diff<10000?'cd f':diff<60000?'cd s':'cd r';
+},100);
+const p=n=>String(n).padStart(2,'0');
+const p3=n=>String(n).padStart(3,'0');
+
+// ── SERVICE WORKER ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js')
+    .then(()=>log('✅ Service Worker 登録完了','i'))
+    .catch(e=>log('SW: '+e.message,'w'));
+}
+
+// ── iPhone判定 ──
+if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone){
+  document.getElementById('instBanner').classList.add('show');
+}
+
+// ── SERVER CHECK ──
+async function checkServer(){
+  const dot=document.getElementById('sbDot'),t=document.getElementById('sbT'),s=document.getElementById('sbS');
+  try{
+    const res=await fetch(`${API}/health`,{signal:AbortSignal.timeout(5000)});
+    const d=await res.json();
+    dot.className='sd ok';t.textContent='✅ サーバー稼働中';
+    s.textContent=d.env==='render'?'Render クラウドで動作中':'ローカルサーバー';
+    serverOk=true;
+    document.getElementById('startBtn').disabled=false;
+  }catch{
+    dot.className='sd ng';t.textContent='❌ サーバー未起動 / スリープ中';
+    s.textContent='ページを再読み込みしてサーバーを起こしてください';
+    serverOk=false;
+    document.getElementById('startBtn').disabled=true;
+  }
+}
+
+// Keep-Alive ping（Renderスリープ防止）
+function startKeepAlive(){
+  stopKeepAlive();
+  keepT=setInterval(async()=>{
+    if(!document.getElementById('tK').checked) return;
+    try{
+      await fetch(`${API}/health`,{signal:AbortSignal.timeout(4000)});
+      log('☕ Keep-Alive ping OK','i');
+    }catch{ log('☕ Keep-Alive失敗（スリープ?）','w'); }
+  },30000);
+}
+function stopKeepAlive(){ if(keepT){clearInterval(keepT);keepT=null;} }
+
+// ── LOG ──
+function log(msg,type='i'){
+  const body=document.getElementById('lgB'),n=new Date();
+  const t=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  const cm={i:'li2',w:'lw2',s:'ls2',e:'le2',a:'la2'};
+  const lm={i:'INFO',w:'WARN',s:'OK',e:'ERR',a:'ACT'};
+  const el=document.createElement('div');
+  el.className='ll';
+  el.innerHTML=`<span class="lt">${t}</span><span class="lb ${cm[type]}">${lm[type]}</span><span class="lm">${msg}</span>`;
+  body.appendChild(el);body.scrollTop=body.scrollHeight;
+}
+function clearLog(){document.getElementById('lgB').innerHTML='';}
+
+function setMon(cls,txt){
+  document.getElementById('monDot').className='dot '+cls;
+  document.getElementById('monTxt').textContent=txt;
+}
+function onIntv(v){document.getElementById('iLbl').textContent=v+'ms';document.getElementById('iV').textContent=v+'ms';}
+
+// ── URL PARSE ──
+function parseUrl(raw){
+  handle='';
+  document.getElementById('hint').className='hint';
+  document.getElementById('pp').className='pp';
+  if(!raw)return;
+  const m=raw.match(/mellojoyjapan\.com\/products\/([^?#/\s]+)/);
+  if(m){
+    handle=decodeURIComponent(m[1]);
+    document.getElementById('hint').innerHTML=`<span class="ok">✓ handle:</span> ${handle}`;
+    document.getElementById('hint').className='hint show';
+  }else if(raw.includes('mellojoyjapan.com')){
+    document.getElementById('hint').innerHTML=`<span class="err">✗ /products/... の形式で入力してください</span>`;
+    document.getElementById('hint').className='hint show';
+  }
+}
+
+// ── NOTIFICATION ──
+function askNotif(){
+  if(!document.getElementById('tN').checked)return;
+  if('Notification' in window && Notification.permission!=='granted'){
+    Notification.requestPermission().then(p=>log(p==='granted'?'🔔 通知許可OK':'通知拒否',p==='granted'?'s':'w'));
+  }
+}
+function notify(title,body,url){
+  if(!document.getElementById('tN').checked)return;
+  if('Notification' in window && Notification.permission==='granted'){
+    const n=new Notification(title,{body,icon:'/icons/icon-192.png',requireInteraction:true,tag:'mj'});
+    if(url)n.onclick=()=>window.open(url,'_blank');
+  }
+}
+function vib(){if(document.getElementById('tV').checked && 'vibrate' in navigator)navigator.vibrate([200,100,200,100,400,100,600]);}
+function beep(){
+  if(!document.getElementById('tS').checked)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [660,880,1100,1320,1600,2000].forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='sine';
+      const t=ctx.currentTime+i*0.12;
+      g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+      o.start(t);o.stop(t+0.22);
+    });
+  }catch{}
+}
+
+// ── ALERT ──
+function showAlert(title,cartUrl){
+  document.getElementById('alertMsg').innerHTML=`<strong>${title}</strong><br>在庫あり！今すぐ購入してください`;
+  document.getElementById('alertBuy').onclick=()=>{window.open(cartUrl,'_blank');document.getElementById('alertBox').classList.remove('show');};
+  document.getElementById('alertBox').classList.add('show');
+}
+
+// ── CHECK ──
+async function check(){
+  if(!handle){log('URLを入力してください','w');return;}
+  log(`🔍 確認中: ${handle}`,'i');
+  try{
+    const res=await fetch(`${API}/product?handle=${encodeURIComponent(handle)}`,{signal:AbortSignal.timeout(8000)});
+    const d=await res.json();
+    document.getElementById('ppT').textContent=d.title;
+    document.getElementById('ppP').textContent=d.price_display;
+    if(d.image)document.getElementById('ppI').src=d.image;
+    const b=document.getElementById('ppB');
+    b.textContent=d.available?`在庫${d.available_count}種`:'売切れ';
+    b.className='pp-b '+(d.available?'a':'s');
+    document.getElementById('pp').className='pp show';
+    log(`"${d.title}" — ${d.available?'🟢 在庫あり！':'🔴 売り切れ'}`,d.available?'s':'w');
+  }catch(e){log('❌ '+e.message,'e');}
+}
+
+// ── POLL ──
+async function poll(){
+  polls++;document.getElementById('sP').textContent=polls;
+  try{
+    const res=await fetch(`${API}/product?handle=${encodeURIComponent(handle)}`,{signal:AbortSignal.timeout(8000)});
+    const d=await res.json();
+    if(d.available){
+      found++;document.getElementById('sF').textContent=found;
+      const v=d.available_variants[0];
+      const qty=document.getElementById('qty').value;
+      const cartUrl=v?`https://www.mellojoyjapan.com/cart/add?id=${v.id}&quantity=${qty}&return_to=/cart`:d.url;
+      log(`🚨 在庫検出！ ${d.title}`,'a');
+      setMon('hit','在庫検出！');
+      beep();vib();
+      notify('🎯 在庫あり！',d.title+' — 今すぐ購入！',cartUrl);
+      showAlert(d.title,cartUrl);
+      if(document.getElementById('tC').checked)setTimeout(()=>window.open(cartUrl,'_blank'),300);
+      stop();return;
+    }
+    if(polls%10===0)log(`⏳ 売り切れ中 (${polls}回)`,'i');
+    if(polls>=parseInt(document.getElementById('maxR').value)){log('最大試行到達','w');stop();}
+  }catch(e){
+    errs++;document.getElementById('sE').textContent=errs;
+    if(errs%5===0)log(`❌ ${e.message}`,'e');
+    if(errs>=15){log('接続エラーが続いています','e');stop();}
+  }
+}
+
+// ── START / STOP ──
+function start(){
+  if(!handle){log('URLを入力してください','w');return;}
+  if(!serverOk){log('サーバーに接続できません。ページを再読み込みしてください','e');return;}
+  const sv=document.getElementById('saleTime').value;
+  if(!sv){log('販売開始日時を入力してください','w');return;}
+
+  polls=0;errs=0;found=0;
+  ['sP','sE','sF'].forEach(id=>document.getElementById(id).textContent='0');
+  running=true;
+  document.getElementById('startBtn').style.display='none';
+  document.getElementById('stopBtn').style.display='';
+
+  const saleTime=new Date(sv).getTime();
+  const preMs=parseInt(document.getElementById('pre').value)*1000;
+  const intvMs=parseInt(document.getElementById('intv').value);
+  const waitMs=Math.max(0,saleTime-preMs-Date.now());
+
+  // Keep-Alive 開始
+  startKeepAlive();
+
+  // 5分前リマインダー
+  if(document.getElementById('t5').checked){
+    const remMs=saleTime-5*60*1000-Date.now();
+    if(remMs>0){
+      remT=setTimeout(()=>{
+        beep();vib();
+        notify('⏰ 5分前！','画面を開いたまま待機してください','/');
+        log('⏰ 5分前リマインダー！','a');
+      },remMs);
+      log(`⏰ リマインダーセット (${Math.floor(remMs/60000)}分後)`,'i');
+    }
+  }
+
+  log('⚡ 監視開始','a');
+  log(`🎯 ${handle}  |  ${intvMs}ms間隔`,'i');
+  log(`🕐 ${new Date(sv).toLocaleString('ja-JP')}`,'i');
+  setMon('on','待機中');
+
+  if(waitMs>500){
+    log(`⏳ ${Math.floor(waitMs/1000)}秒後にポーリング開始...`,'i');
+    preT=setTimeout(()=>{
+      if(!running)return;
+      log('🚀 ポーリング開始！','a');setMon('scan','監視中');
+      loop=setInterval(poll,intvMs);
+    },waitMs);
+  }else{
+    log('🚀 即時ポーリング開始！','a');setMon('scan','監視中');
+    loop=setInterval(poll,intvMs);
+  }
+}
+
+function stop(){
+  if(loop)clearInterval(loop);if(preT)clearTimeout(preT);if(remT)clearTimeout(remT);
+  stopKeepAlive();
+  loop=null;preT=null;remT=null;running=false;
+  document.getElementById('startBtn').style.display='';
+  document.getElementById('stopBtn').style.display='none';
+  setMon('','待機中');log('⏹ 停止','w');
+}
+
+// ── INIT ──
+const tmr=new Date();tmr.setDate(tmr.getDate()+1);tmr.setHours(12,0,0,0);
+document.getElementById('saleTime').value=tmr.toISOString().slice(0,16);
+askNotif();
+log('Mellojoy Sniper Cloud Edition 起動','i');
+log(`API: ${API}`,'i');
+checkServer();
+setInterval(checkServer,30000);
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden){checkServer();log('📱 画面復帰','i');}
+});
+</script>
+</body>
+</html>
